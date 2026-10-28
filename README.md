@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CleanLead
 
-## Getting Started
+Lead and follow-up tracking for cleaning businesses. Next.js (App Router) + Supabase (Postgres, Auth).
 
-First, run the development server:
+## Quick start (local)
+
+Requirements: Node 22+, Docker (for the local Supabase stack).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run db:start                 # starts local Supabase, applies supabase/migrations
+npx supabase status              # copy the API URL and publishable key
+cp .env.local.example .env.local # then paste the publishable key
+npm run dev                      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Auth emails (signup confirmation, password reset) are caught by the local inbox at
+http://127.0.0.1:54324. Email confirmation is on locally to match production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script                                           | Purpose                                                          |
+| ------------------------------------------------ | ---------------------------------------------------------------- |
+| `npm run check`                                  | lint, typecheck, format check, unit tests (run before pushing)   |
+| `npm run test:db`                                | pgTAP tenant isolation and RLS coverage tests (needs `db:start`) |
+| `npm run db:reset`                               | rebuild the local database from migrations                       |
+| `npm run db:diff -- <name>`                      | write a new migration from local schema changes                  |
+| `npm run db:types`                               | regenerate TypeScript types from the local schema                |
+| `npm run db:push:staging` / `db:push:production` | apply migrations to hosted projects                              |
 
-## Learn More
+## Environments
 
-To learn more about Next.js, take a look at the following resources:
+|           | Local            | Staging            | Production         |
+| --------- | ---------------- | ------------------ | ------------------ |
+| `APP_ENV` | `local`          | `staging`          | `production`       |
+| Supabase  | `supabase start` | own hosted project | own hosted project |
+| Config    | `.env.local`     | host env settings  | host env settings  |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use three separate Supabase projects (staging and production are never shared). `src/lib/env.ts`
+validates configuration at startup and refuses localhost or non-https URLs outside `local`.
+Auth settings for hosted projects (site URL, redirect URLs, password rules, email confirmation) are
+set in the Supabase dashboard or with `supabase config push`; `supabase/config.toml` is the reference.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tenancy and security model
 
-## Deploy on Vercel
+- Tenant data lives in tables with an `org_id`. RLS is enabled and forced on every `public` table.
+- Access is decided by `is_member(org_id)` / `has_role(org_id, role)`, which read the `memberships`
+  table for `auth.uid()`. A client-supplied organisation ID is never trusted on its own.
+- Organisations are created only through the `create_organisation()` function (one transaction:
+  organisation, owner membership, audit event). Clients have no insert or delete rights on them.
+- Owner changes are owner-only and the last owner cannot be removed (trigger).
+- `supabase/tests/database/01_rls_coverage.test.sql` fails if any table lacks RLS or a
+  membership-based policy, so new tables must be secured before CI passes.
+- `02_tenant_isolation.test.sql` attempts cross-tenant reads and writes by guessing UUIDs.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+When you add a tenant table: add `org_id uuid not null references organisations`, enable and force
+RLS, write policies using `is_member` / `has_role`, and extend the isolation test.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploying migrations
+
+Run the "Apply database migrations" workflow (manual) or `npm run db:push:<env>` with
+`SUPABASE_ACCESS_TOKEN` and the project ref variables set. Production requires `CONFIRM_PRODUCTION=yes`.

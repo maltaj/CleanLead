@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env files: only *.example are committed
+.env
+.env.*
+!.env*.example
+
+# supabase local state
+supabase/.temp
+supabase/.branches
+supabase/.env

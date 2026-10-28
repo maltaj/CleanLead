@@ -1,0 +1,31 @@
+name: Apply database migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to migrate
+        type: choice
+        options: [staging, production]
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    # Configure required reviewers on the "production" GitHub environment.
+    environment: ${{ inputs.target }}
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_STAGING_PROJECT_REF: ${{ vars.SUPABASE_STAGING_PROJECT_REF }}
+      SUPABASE_PRODUCTION_PROJECT_REF: ${{ vars.SUPABASE_PRODUCTION_PROJECT_REF }}
+      CONFIRM_PRODUCTION: ${{ inputs.target == 'production' && 'yes' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: bash scripts/db-push.sh "${{ inputs.target }}"
