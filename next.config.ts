@@ -9,6 +9,7 @@ const securityHeaders = [
 
 // GitHub Codespaces serves the app through a forwarded host (*.app.github.dev) that differs from
 // the address the server sees, so Next's origin check on Server Actions needs to know about it.
+// Browsers reaching the app through a local port forward send "localhost:3000" as their origin.
 // Scoped to Codespaces only: anyone can create a *.app.github.dev address, so this must never be
 // enabled in staging or production.
 const inCodespaces = process.env.CODESPACES === "true";
@@ -18,7 +19,7 @@ const nextConfig: NextConfig = {
   ...(inCodespaces
     ? {
         allowedDevOrigins: ["*.app.github.dev"],
-        experimental: { serverActions: { allowedOrigins: ["*.app.github.dev"] } },
+        experimental: { serverActions: { allowedOrigins: ["*.app.github.dev", "localhost:3000"] } },
       }
     : {}),
   async headers() {
