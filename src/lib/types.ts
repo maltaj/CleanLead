@@ -41,9 +41,36 @@ export type Lead = LeadListItem & {
 export type LeadEvent = {
   id: number;
   actor_id: string | null;
-  type: "created" | "stage_changed" | "reopened" | "updated";
+  type:
+    | "created"
+    | "stage_changed"
+    | "reopened"
+    | "updated"
+    | "follow_up_created"
+    | "follow_up_done"
+    | "follow_up_skipped";
   from_stage: LeadStage | null;
   to_stage: LeadStage | null;
   meta: Record<string, unknown>;
   created_at: string;
 };
+
+export type FollowUpStatus = "open" | "done" | "skipped";
+
+export type FollowUp = {
+  id: string;
+  lead_id: string;
+  due_at: string;
+  status: FollowUpStatus;
+  note: string | null;
+  outcome: string | null;
+  assigned_to: string | null;
+  created_at: string;
+  completed_at: string | null;
+};
+
+export type FollowUpWithLead = FollowUp & {
+  leads: { name: string; phone: string | null; stage: LeadStage } | null;
+};
+
+export type Template = { id: string; name: string; body: string };

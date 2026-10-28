@@ -60,4 +60,25 @@ describe("describeEvent", () => {
     expect(describeEvent(assigned, nameOf)).toBe("Alice assigned this lead to Adam");
     expect(describeEvent(unassigned, nameOf)).toBe("Alice unassigned this lead");
   });
+
+  it("describes follow-up activity", () => {
+    const created: LeadEvent = {
+      ...base,
+      type: "follow_up_created",
+      meta: { due_at: "2026-11-02T07:00:00Z", note: "Call back" },
+    };
+    expect(describeEvent(created, nameOf)).toMatch(
+      /^Alice scheduled a follow-up for .*09:00: Call back$/,
+    );
+    const done: LeadEvent = { ...base, type: "follow_up_done", meta: { outcome: "Quoted R1500" } };
+    expect(describeEvent(done, nameOf)).toBe("Alice completed a follow-up. Outcome: Quoted R1500");
+    const skipped: LeadEvent = {
+      ...base,
+      type: "follow_up_skipped",
+      meta: { outcome: "Closed automatically: lead marked won" },
+    };
+    expect(describeEvent(skipped, nameOf)).toBe(
+      "Alice skipped a follow-up. Closed automatically: lead marked won",
+    );
+  });
 });

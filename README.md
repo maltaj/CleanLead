@@ -17,6 +17,16 @@ npm run dev                      # http://localhost:3000
 Auth emails (signup confirmation, password reset) are caught by the local inbox at
 http://127.0.0.1:54324. Email confirmation is on locally to match production.
 
+## Follow-ups and templates
+
+A follow-up always has a due date and an explicit status (open, done, skipped). Completing one requires
+an outcome and can schedule the next action in the same transaction (`complete_follow_up()`).
+Completed and skipped follow-ups are history and cannot be edited. Closing a lead (won or lost) skips
+its open follow-ups, and a closed lead cannot get new ones, so lead stage and follow-up state cannot
+contradict each other. "Today" and "overdue" use South African time (UTC+2). Message templates support
+fill-in fields such as `{{customer_name}}`, copy-to-clipboard, and a WhatsApp click-to-chat link (a link
+that prefills a message, not an API integration). `04_follow_ups.test.sql` covers all of this.
+
 ## Run in GitHub Codespaces (no local install)
 
 Open the repository on GitHub, choose **Code → Codespaces → Create codespace on this branch**. The
