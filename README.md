@@ -52,6 +52,15 @@ set in the Supabase dashboard or with `supabase config push`; `supabase/config.t
 - `supabase/tests/database/01_rls_coverage.test.sql` fails if any table lacks RLS or a
   membership-based policy, so new tables must be secured before CI passes.
 - `02_tenant_isolation.test.sql` attempts cross-tenant reads and writes by guessing UUIDs.
+- `03_leads.test.sql` covers leads: isolation, the event trail, outcome dates, reopening, and
+  append-only history.
+
+## Leads
+
+Stages are New, Contacted, Quote sent, Won and Lost. Follow-ups are a separate entity (next milestone),
+so "follow-up due" is never a stage. The database owns the rules: `closed_at` is set on Won/Lost and
+cleared on reopen, every creation and stage change writes an immutable `lead_events` row, and a
+reopen keeps the earlier outcome in history. Assignees must belong to the organisation.
 
 When you add a tenant table: add `org_id uuid not null references organisations`, enable and force
 RLS, write policies using `is_member` / `has_role`, and extend the isolation test.

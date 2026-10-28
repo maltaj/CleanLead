@@ -1,3 +1,5 @@
+import type { LeadSource, LeadStage } from "@/lib/leads/constants";
+
 // Hand-written row shapes for the tables used so far. Replace with generated types
 // (`npm run db:types`) once the local Supabase stack is running.
 export type OrgRole = "member" | "admin" | "owner";
@@ -12,4 +14,36 @@ export type TeamMember = {
   user_id: string;
   role: OrgRole;
   profiles: { full_name: string; email: string } | null;
+};
+
+export type LeadListItem = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  suburb: string | null;
+  service_type: string;
+  est_value_cents: number | null;
+  source: LeadSource;
+  stage: LeadStage;
+  assigned_to: string | null;
+  created_at: string;
+};
+
+export type Lead = LeadListItem & {
+  org_id: string;
+  notes: string | null;
+  lost_reason: string | null;
+  closed_at: string | null;
+  updated_at: string;
+};
+
+export type LeadEvent = {
+  id: number;
+  actor_id: string | null;
+  type: "created" | "stage_changed" | "reopened" | "updated";
+  from_stage: LeadStage | null;
+  to_stage: LeadStage | null;
+  meta: Record<string, unknown>;
+  created_at: string;
 };

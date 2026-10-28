@@ -37,6 +37,22 @@ export default async function OrgLayout({ children, params }: LayoutProps<"/app/
           </div>
         </div>
       </header>
+      <nav aria-label="Main" className="border-border bg-card border-b">
+        <div className="mx-auto flex w-full max-w-5xl gap-1 px-4">
+          {[
+            { href: `/app/${org.slug}`, label: "Dashboard" },
+            { href: `/app/${org.slug}/leads`, label: "Leads" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-muted hover:text-foreground px-3 py-3 text-sm font-medium"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
     </div>
   );
