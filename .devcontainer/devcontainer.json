@@ -1,0 +1,25 @@
+{
+  "name": "CleanLead",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "hostRequirements": { "memory": "8gb" },
+  "postCreateCommand": "npm install",
+  "postStartCommand": "bash scripts/codespaces-start.sh",
+  "forwardPorts": [3000, 54323, 54324],
+  "portsAttributes": {
+    "3000": { "label": "CleanLead app", "onAutoForward": "notify" },
+    "54323": { "label": "Supabase Studio", "onAutoForward": "silent" },
+    "54324": { "label": "Local inbox", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  }
+}

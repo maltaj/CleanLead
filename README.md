@@ -17,6 +17,23 @@ npm run dev                      # http://localhost:3000
 Auth emails (signup confirmation, password reset) are caught by the local inbox at
 http://127.0.0.1:54324. Email confirmation is on locally to match production.
 
+## Run in GitHub Codespaces (no local install)
+
+Open the repository on GitHub, choose **Code → Codespaces → Create codespace on this branch**. The
+container installs Node 22 and Docker, starts a slimmed-down local Supabase stack and writes
+`.env.local` for you (this takes a few minutes the first time). Then, in the codespace terminal:
+
+```bash
+npm run dev      # open the forwarded port 3000 ("CleanLead app" in the Ports tab)
+npm run test:db  # database tests
+npm run check    # lint, typecheck, formatting, unit tests
+```
+
+Notes: email confirmation is switched off inside a codespace (email links cannot reach a browser from
+there), so after signing up just sign in. Password-reset links are likewise not clickable in a
+codespace; test that flow on a normal machine. If the start script cannot create `.env.local`, run
+`npx supabase status` and create it by hand from `.env.local.example`.
+
 ## Scripts
 
 | Script                                           | Purpose                                                          |
