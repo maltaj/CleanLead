@@ -17,6 +17,23 @@ npm run dev                      # http://localhost:3000
 Auth emails (signup confirmation, password reset) are caught by the local inbox at
 http://127.0.0.1:54324. Email confirmation is on locally to match production.
 
+## Run in GitHub Codespaces (no local install)
+
+Open the repository on GitHub, choose **Code → Codespaces → Create codespace on this branch**. The
+container installs Node 22 and Docker, starts a slimmed-down local Supabase stack and writes
+`.env.local` for you (this takes a few minutes the first time). Then, in the codespace terminal:
+
+```bash
+npm run dev      # open the forwarded port 3000 ("CleanLead app" in the Ports tab)
+npm run test:db  # database tests
+npm run check    # lint, typecheck, formatting, unit tests
+```
+
+Notes: email confirmation is switched off inside a codespace (email links cannot reach a browser from
+there), so after signing up just sign in. Password-reset links are likewise not clickable in a
+codespace; test that flow on a normal machine. If the start script cannot create `.env.local`, run
+`npx supabase status` and create it by hand from `.env.local.example`.
+
 ## Scripts
 
 | Script                                           | Purpose                                                          |
@@ -52,6 +69,15 @@ set in the Supabase dashboard or with `supabase config push`; `supabase/config.t
 - `supabase/tests/database/01_rls_coverage.test.sql` fails if any table lacks RLS or a
   membership-based policy, so new tables must be secured before CI passes.
 - `02_tenant_isolation.test.sql` attempts cross-tenant reads and writes by guessing UUIDs.
+- `03_leads.test.sql` covers leads: isolation, the event trail, outcome dates, reopening, and
+  append-only history.
+
+## Leads
+
+Stages are New, Contacted, Quote sent, Won and Lost. Follow-ups are a separate entity (next milestone),
+so "follow-up due" is never a stage. The database owns the rules: `closed_at` is set on Won/Lost and
+cleared on reopen, every creation and stage change writes an immutable `lead_events` row, and a
+reopen keeps the earlier outcome in history. Assignees must belong to the organisation.
 
 When you add a tenant table: add `org_id uuid not null references organisations`, enable and force
 RLS, write policies using `is_member` / `has_role`, and extend the isolation test.
