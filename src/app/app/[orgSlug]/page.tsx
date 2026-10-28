@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DueBadge } from "@/components/follow-ups/follow-up-item";
 import { Card } from "@/components/ui/card";
 import { listTeam, requireOrganisation } from "@/lib/auth/dal";
+import { listOpenFollowUps } from "@/lib/follow-ups/queries";
+import { formatDue } from "@/lib/follow-ups/time";
 import { LEAD_STAGES, STAGE_LABELS } from "@/lib/leads/constants";
 import { countLeadsByStage } from "@/lib/leads/queries";
 
@@ -10,7 +13,13 @@ export const metadata: Metadata = { title: "Dashboard" };
 export default async function OrgDashboardPage({ params }: PageProps<"/app/[orgSlug]">) {
   const { orgSlug } = await params;
   const org = await requireOrganisation(orgSlug);
-  const [team, counts] = await Promise.all([listTeam(org.id), countLeadsByStage(org.id)]);
+  const [team, counts, followUps] = await Promise.all([
+    listTeam(org.id),
+    countLeadsByStage(org.id),
+    listOpenFollowUps(org.id),
+  ]);
+  const now = new Date();
+  const actionable = [...followUps.overdue, ...followUps.today];
 
   return (
     <div className="space-y-6">
@@ -41,9 +50,49 @@ export default async function OrgDashboardPage({ params }: PageProps<"/app/[orgS
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <h2 className="text-muted text-sm font-medium">Follow-ups due today</h2>
-          <p className="mt-2 text-sm">Follow-up reminders arrive in the next milestone.</p>
+        <Card className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-muted text-sm font-medium">Follow-ups to do</h2>
+            <Link
+              href={`/app/${org.slug}/follow-ups`}
+              className="text-brand text-sm hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          <p className="text-sm">
+            <span
+              className={
+                followUps.overdue.length > 0 ? "text-danger font-semibold" : "font-semibold"
+              }
+            >
+              {followUps.overdue.length} overdue
+            </span>
+            {" · "}
+            <span className="font-semibold">{followUps.today.length} due today</span>
+          </p>
+          {actionable.length === 0 ? (
+            <p className="text-muted text-sm">
+              Nothing to do right now. Schedule follow-ups from a lead.
+            </p>
+          ) : (
+            <ul className="divide-border divide-y">
+              {actionable.slice(0, 5).map((f) => (
+                <li key={f.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <Link
+                    href={`/app/${org.slug}/leads/${f.lead_id}`}
+                    className="min-w-0 hover:underline"
+                  >
+                    <span className="block truncate font-medium">{f.leads?.name ?? "Lead"}</span>
+                    <span className="text-muted block truncate text-xs">
+                      {f.note || "Follow up"} · {formatDue(f.due_at, now)}
+                    </span>
+                  </Link>
+                  <DueBadge dueAt={f.due_at} now={now} />
+                </li>
+              ))}
+            </ul>
+          )}
         </Card>
         <Card>
           <h2 className="text-muted text-sm font-medium">Team</h2>

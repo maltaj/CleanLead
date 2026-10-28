@@ -38,10 +38,12 @@ export default async function OrgLayout({ children, params }: LayoutProps<"/app/
         </div>
       </header>
       <nav aria-label="Main" className="border-border bg-card border-b">
-        <div className="mx-auto flex w-full max-w-5xl gap-1 px-4">
+        <div className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto px-4">
           {[
             { href: `/app/${org.slug}`, label: "Dashboard" },
             { href: `/app/${org.slug}/leads`, label: "Leads" },
+            { href: `/app/${org.slug}/follow-ups`, label: "Follow-ups" },
+            { href: `/app/${org.slug}/templates`, label: "Templates" },
           ].map((item) => (
             <Link
               key={item.href}
