@@ -23,7 +23,18 @@ const nextConfig: NextConfig = {
       }
     : {}),
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path((?!enquire/).*)", headers: securityHeaders },
+      // The public enquiry form may be embedded in a business's own website. Only this path.
+      {
+        source: "/enquire/:slug",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Content-Security-Policy", value: "frame-ancestors *" },
+        ],
+      },
+    ];
   },
   turbopack: {
     rules: {

@@ -5,7 +5,7 @@ import { getEnv } from "@/lib/env";
 const PUBLIC_PATHS = ["/", "/login", "/signup", "/forgot-password", "/auth/callback"];
 
 export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.includes(pathname);
+  return PUBLIC_PATHS.includes(pathname) || pathname.startsWith("/enquire/");
 }
 
 /**

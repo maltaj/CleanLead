@@ -41,7 +41,7 @@ export async function getLead(orgId: string, leadId: string): Promise<Lead | nul
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("leads")
-    .select(`${LIST_COLUMNS}, org_id, notes, lost_reason, closed_at, updated_at`)
+    .select(`${LIST_COLUMNS}, org_id, notes, enquiry_message, lost_reason, closed_at, updated_at`)
     .eq("org_id", orgId)
     .eq("id", leadId)
     .maybeSingle();

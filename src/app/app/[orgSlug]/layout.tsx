@@ -42,6 +42,7 @@ export default async function OrgLayout({ children, params }: LayoutProps<"/app/
           {[
             { href: `/app/${org.slug}`, label: "Dashboard" },
             { href: `/app/${org.slug}/leads`, label: "Leads" },
+            { href: `/app/${org.slug}/settings`, label: "Settings" },
           ].map((item) => (
             <Link
               key={item.href}

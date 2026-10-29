@@ -2,21 +2,21 @@ import { z } from "zod";
 import { DEFAULT_SERVICE_TYPES, LEAD_SOURCES, LEAD_STAGES } from "@/lib/leads/constants";
 import { parseRandsToCents } from "@/lib/leads/money";
 
-const optionalText = (max: number) =>
+export const optionalText = (max: number) =>
   z
     .string()
     .trim()
     .max(max, `Use ${max} characters or fewer.`)
     .transform((v) => (v === "" ? null : v));
 
-const phoneSchema = z
+export const phoneSchema = z
   .string()
   .trim()
   .transform((v) => v.replace(/\s+/g, " "))
   .refine((v) => v === "" || /^\+?[0-9][0-9 ()-]{5,23}$/.test(v), "Enter a valid phone number.")
   .transform((v) => (v === "" ? null : v));
 
-const emailField = z
+export const emailField = z
   .string()
   .trim()
   .toLowerCase()

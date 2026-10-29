@@ -49,6 +49,12 @@ export default async function LeadPage({ params }: PageProps<"/app/[orgSlug]/lea
 
       <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
         <div className="space-y-4">
+          {lead.enquiry_message ? (
+            <Card className="space-y-2">
+              <h2 className="text-lg font-semibold">Customer&apos;s message</h2>
+              <p className="text-sm whitespace-pre-wrap">{lead.enquiry_message}</p>
+            </Card>
+          ) : null}
           <Card className="space-y-5">
             <h2 className="text-lg font-semibold">Details</h2>
             <LeadForm
