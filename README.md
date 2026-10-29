@@ -86,3 +86,17 @@ RLS, write policies using `is_member` / `has_role`, and extend the isolation tes
 
 Run the "Apply database migrations" workflow (manual) or `npm run db:push:<env>` with
 `SUPABASE_ACCESS_TOKEN` and the project ref variables set. Production requires `CONFIRM_PRODUCTION=yes`.
+
+## Public enquiry form
+
+Each business can switch on a public form at `/enquire/<slug>` (Settings → Public enquiry form),
+and embed it with the iframe snippet shown there. Submissions become `website_form` leads.
+
+- Anonymous visitors never touch tables. The server calls `submit_public_enquiry()` with the
+  service-role key; EXECUTE is granted to `service_role` only. Keep `SUPABASE_SERVICE_ROLE_KEY`
+  server-side and use `src/lib/supabase/service.ts` for nothing else.
+- Spam controls: honeypot, Cloudflare Turnstile (required in production), 5 enquiries per
+  hashed IP and 100 per business per hour, consent checkbox (stored as `consent_at`).
+- Local setup: `scripts/codespaces-start.sh` writes the service key and an IP-hash secret to
+  `.env.local`. Turnstile is optional locally.
+- `public_enquiry_attempts` holds hashed IPs only; prune rows older than 7 days (retention job, later).

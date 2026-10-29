@@ -35,13 +35,15 @@ select is(
   (select count(*)::int
      from information_schema.columns c
     where c.table_schema = 'public' and c.column_name = 'org_id'
+      -- Service-only tables (no client privileges at all) need no client policies.
+      and coalesce(has_table_privilege('authenticated', to_regclass(format('public.%I', c.table_name)), 'select,insert,update,delete'), false)
       and not exists (
         select 1 from pg_policies p
         where p.schemaname = 'public' and p.tablename = c.table_name
           and (p.qual ~ 'is_member|has_role' or p.with_check ~ 'is_member|has_role')
       )),
   0,
-  'every table with an org_id has membership-based policies'
+  'every client-accessible table with an org_id has membership-based policies'
 );
 
 select is(

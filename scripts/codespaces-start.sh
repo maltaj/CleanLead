@@ -23,6 +23,8 @@ status="$(npx supabase status -o env 2>/dev/null)"
 pick() { printf '%s\n' "$status" | sed -n "s/^$1=\"\(.*\)\"$/\1/p" | head -n1; }
 api_url="$(pick API_URL)"
 key="$(pick PUBLISHABLE_KEY)"
+service_key="$(pick SERVICE_ROLE_KEY)"
+[ -n "$service_key" ] || service_key="$(pick SECRET_KEY)"
 [ -n "$key" ] || key="$(pick ANON_KEY)"
 if [ -z "$api_url" ] || [ -z "$key" ]; then
   echo "Could not read the API URL or key from 'npx supabase status'. Create .env.local by hand (see README)." >&2
@@ -39,6 +41,8 @@ APP_ENV=local
 NEXT_PUBLIC_SITE_URL=${site}
 NEXT_PUBLIC_SUPABASE_URL=${api_url}
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${key}
+SUPABASE_SERVICE_ROLE_KEY=${service_key}
+ENQUIRY_IP_HASH_SECRET=$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')
 ENV
 
 echo "Ready. Run: npm run dev   (then open the forwarded port 3000)"

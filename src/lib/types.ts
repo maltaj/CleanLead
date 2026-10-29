@@ -33,6 +33,7 @@ export type LeadListItem = {
 export type Lead = LeadListItem & {
   org_id: string;
   notes: string | null;
+  enquiry_message: string | null;
   lost_reason: string | null;
   closed_at: string | null;
   updated_at: string;
